@@ -33,10 +33,5 @@
       "@babel/preset-env",
       "@babel/preset-react"
     ]
-  },
-  "jest" : {
-    "moduleNameMapper": {
-      "^.+\\.(css|scss)$": "<rootDir>/jest/staticHandler.js"
-    }
   }
 }

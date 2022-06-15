@@ -19,7 +19,7 @@ function app(window) {
         let tag = document.getElementById(widgetName + '-Script');
 
         if (!tag) {
-            throw Error(`Cannot find script tag with id {$widgetName}-Script`);
+            throw Error(`Cannot find script tag with id ${widgetName}-Script`);
         }
 
         let rawData = tag.getAttribute('data-config');
@@ -75,7 +75,10 @@ function apiHandler(api, params) {
             // get a reference to the created widget component so we can
             // call methods as needed
             widgetComponent = React.createRef();
-            ReactDOM.render(<Widget ref={widgetComponent} />, document.getElementById(config.targetElementId));
+            ReactDOM.render(
+                <Widget ref={widgetComponent} />,
+                document.getElementById(config.targetElementId)
+            );
             break;
         case 'message':
             // Send the message to the current widget instance
