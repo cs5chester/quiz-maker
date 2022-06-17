@@ -50,7 +50,7 @@ function app(window) {
         if (queue) {
             console.log(`${widgetName} placeholder queue found`);
 
-            for (var i = 0; i < queue.length; i++) {
+            for (let i = 0; i < queue.length; i++) {
                 apiHandler(queue[i][0], queue[i][1]);
             }
         }
@@ -65,18 +65,20 @@ function apiHandler(api, params) {
     api = api.toLowerCase();
     let config = window[widgetConfigName];
 
-    console.log(`Handling API call ${api}`, params, config);
+    // console.log(`Handling API call ${api}`, params, config);
 
     switch (api) {
         case 'init':
             config = Object.assign({}, config, params);
             window[widgetConfigName] = config;
-
             // get a reference to the created widget component so we can
             // call methods as needed
             widgetComponent = React.createRef();
             ReactDOM.render(
-                <Widget ref={widgetComponent} />,
+                <Widget
+                    ref={widgetComponent}
+                    config={config}
+                />,
                 document.getElementById(config.targetElementId)
             );
             break;
