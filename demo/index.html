@@ -4,15 +4,21 @@
 </head>
 
 <body>
-    <div id="quiz-maker-widget">Loading...</div>
+    <div id="quiz-maker-widget"></div>
 
     <script>
         (function (w, d, s, o, f, js, fjs) {
             w['quiz-maker-widget'] = o; w[o] = w[o] || function () { (w[o].q = w[o].q || []).push(arguments) };
             js = d.createElement(s), fjs = d.getElementsByTagName(s)[0];
             js.id = o; js.src = f; js.async = 1; fjs.parentNode.insertBefore(js, fjs);
-        }(window, document, 'script', 'w1', './widget.js'));
-        w1('init', { targetElementId: 'quiz-maker-widget' });
+        }(window, document, 'script', 'w1', './widgetV1.0.js'));
+        w1('init', {
+            targetElementId: 'quiz-maker-widget',
+            quizApiScript: 'https://take.quiz-maker.com/3012/CDN/quiz-embed-v1.js',
+            publicKey: 'A1403561515LA6471E1H5LAD298D685LA3162I9102L4753I4512LA14827176DL1906307B4',
+            quizId: 'QFMF6P7V5',
+            quizTimeMinutes: '60'
+        });
     </script>
 </body>
 </html>
