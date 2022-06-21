@@ -13,12 +13,28 @@ function quizWidget($, config) {
         },
 
         _prepareWidget: function () {
+            this._applyStyles();
             this._createGetStarted();
             this._createInfoPopups();
         },
 
-        _createInfoPopups: function () {
+        _applyStyles: function () {
 
+        },
+
+        _createInfoPopups: function () {
+            var quizWrapper = $('.' + config.quizWrapper);
+            var baseStyles = quizWrapper.find('link, style');
+
+            var link = $("<link/>", {
+                rel: "stylesheet",
+                type: "text/css",
+                href: config.styles,
+            }).appendTo(quizWrapper);
+
+            // baseStyles.remove();
+
+            link.on('load', this._triggerQuizWrapperVisibility.bind(this));
         },
 
         _createGetStarted: function () {
@@ -49,6 +65,10 @@ function quizWidget($, config) {
 
         _triggerQuizContainerVisibility: function (isVisible) {
             $('#' + config.quizParent).toggle(isVisible);
+        },
+
+        _triggerQuizWrapperVisibility: function (isVisible) {
+            $('.' + config.quizWrapper).toggle(isVisible);
         },
 
         _triggerGetStartedVisibility: function (isVisible) {
