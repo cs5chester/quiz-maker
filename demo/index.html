@@ -1,12 +1,27 @@
-<div class="quiz-widget__wrapper" style="display: none">
-    <div id="quiz-widget" style="display: none"></div>
-</div>
+<!DOCTYPE html>
 
-<script src="../src/quiz.js" data-quiz-config='{
-    "quizId": "QFMF6P7V5",
-    "publicKey": "A1403561515LA6471E1H5LAD298D685LA3162I9102L4753I4512LA14827176DL1906307B4",
-    "quizParent": "quiz-widget",
-    "quizWrapper": "quiz-widget__wrapper",
-    "quizTimeMinutes": "2",
-    "styles": "https://cdn.jsdelivr.net/gh/cs5chester/quiz-maker@master/src/styles.css"
-}'></script>
+<html lang="en" style="width: 100%; height: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+</head>
+
+<body style="width: 100%; height: 100%; margin: 0">
+    <div id="quiz">
+        <div class="quiz-widget__wrapper" style="display: none">
+            <div id="quiz-widget" style="display: none"></div>
+        </div>
+    </div>
+
+
+    <script src="../src/quiz.js" data-quiz-config='{
+        "quizId": "QFMF6P7V5",
+        "publicKey": "A1403561515LA6471E1H5LAD298D685LA3162I9102L4753I4512LA14827176DL1906307B4",
+        "quizParent": "quiz-widget",
+        "quizWrapper": "quiz-widget__wrapper",
+        "quizTimeMinutes": "60",
+        "styles": "../src/quiz.css"
+    }'></script>
+</body>
+</html>

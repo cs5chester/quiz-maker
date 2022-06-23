@@ -1,10 +1,81 @@
-function quizWidget($, config) {
+function quizWidget($) {
+    var config = $('[data-quiz-config]').data('quizConfig');
+
     var quizWidgetObject = {
-        config: config,
         options: {
             getStartedButtonClass: 'quiz-widget__get-started-button',
             getStartedContainerClass: 'quiz-widget__get-started',
-            getStartedText: 'Not sure which bed you need? Take our quick Sleep Selector quiz and well recommended the right bed for you.'
+            getStartedText: 'Not sure which bed you need? Take our quick Sleep Selector quiz and well recommended the right bed for you.',
+            quizTabs: '#quiz-tabs',
+            questionTitle: '.qp_qi',
+            questionPicture: '.qp_pic',
+            learnMoreClass: 'quiz-widget__learn-more',
+            quizResults: '#quiz-results',
+            quizContainer: '.quiz-container',
+            quizWrapper: '.quiz-widget__wrapper',
+            progressBarWrapperClass: 'quiz-widget__progress-bar-wrapper',
+            progressLine: '.quiz-widget__progress-line',
+            progressBarItems: '.quiz-widget__progress-bar-item',
+        },
+
+        _loadQuiz: function () {
+            var self = this;
+
+            qz.load({
+                quiz: config.quizId,
+                parent: config.quizParent,
+                onCreate: function (quizDetails) {
+                    self._init();
+                }
+            });
+        },
+
+        _create: function () {
+            var publicKey = config.publicKey;
+
+            if (publicKey && config.quizParent && config.quizId) {
+                qz.setKey(publicKey);
+                this._loadQuiz();
+
+                quiz.addCB('afterResults', function() {
+                    if(this.quizTime) {
+                        clearTimeout(this.quizTime);
+
+                        this.quizTime = null;
+                    }
+
+                    $(this.options.quizContainer).toggleClass('results', this._isResultsStep())
+                    this._triggerProgressBarVisibility(false);
+                    this._removeBaseStyles();
+                }.bind(this));
+
+                quiz.addCB('Next', function(question) {
+                    this._updateProgressBar(question.frompage + 1)
+                }.bind(this));
+
+                quiz.addCB('Back', function(question) {
+                    this._updateProgressBar(question.frompage - 1)
+                }.bind(this));
+            }
+        },
+
+        _updateProgressBar: function (index) {
+            var tabs = this._getTabs();
+            var currentIndex = index || +(tabs.siblings('.sel').attr('tid'));
+            var progressBarItems = $(this.options.progressBarItems);
+            var activeClass = 'active';
+            var percents = (currentIndex / tabs.length) * 100
+
+            $(this.options.progressLine).css({
+                width: percents + '%'
+            })
+
+            progressBarItems.removeClass(activeClass);
+            progressBarItems.eq(currentIndex - 1).addClass(activeClass);
+        },
+
+        _isResultsStep: function () {
+            return $(this.options.quizResults).length > 0;
         },
 
         _init: function () {
@@ -12,33 +83,126 @@ function quizWidget($, config) {
             this._initEvents();
         },
 
+
         _prepareWidget: function () {
             this._applyStyles();
-            this._createGetStarted();
-            this._createInfoPopups();
+
+            if(this._isQuizInProgress()) {
+                this._beginQuiz();
+            }else {
+                this._createGetStarted();
+                this._updateQuestionsHtml();
+            }
+        },
+
+        _isQuizInProgress: function () {
+            var quizIdShort = config.quizId.substring(1);
+            var hash = window.location.hash;
+
+            return hash.indexOf(quizIdShort) !== -1
         },
 
         _applyStyles: function () {
-
-        },
-
-        _createInfoPopups: function () {
-            var quizWrapper = $('.' + config.quizWrapper);
-            var baseStyles = quizWrapper.find('link, style');
-
             var link = $("<link/>", {
                 rel: "stylesheet",
                 type: "text/css",
                 href: config.styles,
-            }).appendTo(quizWrapper);
+            });
 
-            // baseStyles.remove();
+            this._removeBaseStyles();
 
-            link.on('load', this._triggerQuizWrapperVisibility.bind(this));
+            link.on('load', function () {
+                this._triggerQuizWrapperVisibility(true);
+            }.bind(this));
+
+            link.appendTo(this._getWrapper());
+        },
+
+        _removeBaseStyles: function () {
+            var baseStyles = this._getParent().find('link');
+
+            baseStyles.remove();
+            $('.qp_quiz').attr('style', '')
+        },
+
+        _getParent: function () {
+            return $('#' + config.quizParent);
+        },
+
+        _getWrapper: function () {
+            return $('.' + config.quizWrapper);
+        },
+
+        _getTabs: function () {
+            return $(this.options.quizTabs + '>div');
+        },
+
+        _updateQuestionsHtml: function () {
+            var quizTabs = this._getTabs();
+            var options = this.options;
+
+            var progressBarHtml = $(
+                '<div style="display: none" class="'+ options.progressBarWrapperClass +'">' +
+                    '<div class="quiz-widget__progress-line-wrapper">' +
+                        '<div class="quiz-widget__progress-line"></div>' +
+                    '</div>' +
+                    '<div class="quiz-widget__progress-bar">' +
+                    '</div>' +
+                '</div>'
+            );
+
+            $.each(quizTabs, function (i, tab) {
+                var $tab = $(tab);
+                var questionTitle = $tab.find(options.questionTitle);
+                var questionIndexOfTotal = $('<div class="quiz-widget__question-index-of-total-text">' + 'Question ' + (i + 1) + ' of ' + quizTabs.length + '</div>');
+                var dataTag = questionTitle.find('code');
+                var learnMoreTitle = dataTag.data('title');
+                var learnMoreText = dataTag.data('text');
+                var progressBarItemText = dataTag.data('progressbar');
+                var learnMorePicture = $tab.find(options.questionPicture);
+                var learnMorePictureBackground = learnMorePicture.css('background-image');
+                var learnMoreOpen = $('<button class="quiz-widget__learn-more-open"></button>');
+                var learnMoreClose = $('<button class="quiz-widget__learn-more-close"></button>');
+                var holderClass = 'quiz-widget__learn-more-holder';
+
+                var learnMoreHtml =  $(
+                    '<div style="display: none" class='+ this.options.learnMoreClass +'>' +
+                        '<div class="'+ holderClass +'">' +
+                            '<div class="quiz-widget__learn-more-column quiz-widget__learn-more-column--info">' +
+                                '<h3>'+ learnMoreTitle +'</h3>' +
+                                '<div class="quiz-widget__learn-more-text">' + learnMoreText +'</div>' +
+                            '</div>' +
+
+                            '<div class="quiz-widget__learn-more-column quiz-widget__learn-more-column--image">' +
+                                '<div class="quiz-widget__learn-more-image"></div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>'
+                );
+
+                learnMorePicture.remove();
+
+                learnMoreHtml.find('.' + holderClass).append(learnMoreClose);
+                questionTitle.find('>div:first-child').append(learnMoreOpen);
+                questionIndexOfTotal.insertBefore(questionTitle);
+                $tab.append(learnMoreHtml);
+                progressBarItemText && progressBarHtml.find('.quiz-widget__progress-bar').append('<div class="quiz-widget__progress-bar-item">'+ progressBarItemText +'</div>')
+                $('.quiz-widget__learn-more-image').css('background-image', learnMorePictureBackground);
+
+                learnMoreClose.on('click', function (){
+                    this._triggerLearnMoreVisibility(false);
+                }.bind(this))
+
+                learnMoreOpen.on('click', function (){
+                    this._triggerLearnMoreVisibility(true);
+                }.bind(this));
+            }.bind(this))
+
+            $(options.quizWrapper).prepend(progressBarHtml);
         },
 
         _createGetStarted: function () {
-            var quizTimeText = 'Quiz time: ' + config.quizTimeMinutes + 'minutes';
+            var quizTimeText = 'Quiz time: ' + config.quizTimeMinutes + ' minutes';
             var html = '<div class='+ this.options.getStartedContainerClass +'>' +
                             '<h3>Sleep Selector</h3>' +
 
@@ -60,46 +224,62 @@ function quizWidget($, config) {
         _initEvents: function () {
             var options = this.options
 
-            $('.' + options.getStartedButtonClass).on('click', this._beginQuiz.bind(this))
+            $('.' + options.getStartedButtonClass).on('click', function () {
+                this._beginQuiz();
+                this._setQuizTime();
+            }.bind(this))
+        },
+
+        _reloadQuiz: function () {
+            console.log('reload');
+            this._triggerQuizContainerVisibility(false);
+            this._getParent().html('');
+
+            $('.' + this.options.getStartedContainerClass).remove();
+
+            this._loadQuiz();
+        },
+
+        _setQuizTime: function () {
+            var minutes = config.quizTimeMinutes || 2
+            var timeout = +minutes * 60000;
+
+            this.quizTime = setTimeout(function () {
+                this._reloadQuiz();
+            }.bind(this), timeout)
         },
 
         _triggerQuizContainerVisibility: function (isVisible) {
-            $('#' + config.quizParent).toggle(isVisible);
+            this._getParent().toggle(isVisible);
         },
 
         _triggerQuizWrapperVisibility: function (isVisible) {
             $('.' + config.quizWrapper).toggle(isVisible);
         },
 
+        _triggerLearnMoreVisibility: function (isVisible) {
+            $('.' + this.options.learnMoreClass).toggle(isVisible);
+        },
+
         _triggerGetStartedVisibility: function (isVisible) {
             $('.' + this.options.getStartedContainerClass).toggle(isVisible);
         },
 
-        _beginQuiz: function (e) {
+        _triggerProgressBarVisibility: function (isVisible) {
+            $('.' + this.options.progressBarWrapperClass).toggle(isVisible);
+        },
+
+        _beginQuiz: function () {
             this._triggerQuizContainerVisibility(true);
+            this._triggerProgressBarVisibility(true);
             this._triggerGetStartedVisibility(false);
+            this._updateProgressBar();
         }
     }
 
-    quizWidgetObject._init();
+    config && quizWidgetObject._create();
 
     window.quizWidget = quizWidgetObject;
-}
-
-function startQuizWidget($) {
-    var config = $('[data-quiz-config]').data('quizConfig');
-
-    if (config) {
-        qz.setKey(config.publicKey);
-
-        qz.load({
-            quiz: config.quizId,
-            parent: config.quizParent,
-            onLoad: function () {
-                quizWidget($, config)
-            }
-        });
-    }
 }
 
 (function () {
@@ -167,12 +347,12 @@ function startQuizWidget($) {
             if (a.readyState) {
                 a.onreadystatechange = function () { // For old versions of IE
                     if (this.readyState == 'complete' || this.readyState == 'loaded') {
-                        startQuizWidget(jQuery);
+                        quizWidget(jQuery);
                     }
                 };
             } else { // Other browsers
                 a.onload = function () {
-                    startQuizWidget(jQuery)
+                    quizWidget(jQuery)
                 };
             }
 
