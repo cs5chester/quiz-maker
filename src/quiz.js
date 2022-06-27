@@ -14,6 +14,7 @@ function quizWidget($) {
             quizContainer: '.quiz-container',
             quizWrapper: '.quiz-widget__wrapper',
             progressBarWrapperClass: 'quiz-widget__progress-bar-wrapper',
+            progressBar: '.quiz-widget__progress-bar',
             progressLine: '.quiz-widget__progress-line',
             progressBarItems: '.quiz-widget__progress-bar-item',
         },
@@ -26,7 +27,7 @@ function quizWidget($) {
             qz.load({
                 quiz: config.quizId,
                 parent: config.quizParent,
-                onCreate: function (quizDetails) {
+                onCreate: function () {
                     self._init();
                 }
             });
@@ -101,7 +102,12 @@ function quizWidget($) {
             })
 
             progressBarItems.removeClass(activeClass);
-            progressBarItems.eq(currentIndex - 1).addClass(activeClass);
+
+            var activeItem = progressBarItems.eq(currentIndex - 1);
+            var offset = activeItem.offset();
+            activeItem.addClass(activeClass);
+
+            offset && $(this.options.progressBar).stop().animate({scrollLeft: offset.left - 20}, 500);
         },
 
         _isResultsStep: function () {
@@ -299,6 +305,7 @@ function quizWidget($) {
         },
 
         _triggerLearnMoreVisibility: function (isVisible) {
+            $('body').toggleClass('quiz-body-overflowed', isVisible);
             $('.' + this.options.learnMoreClass).toggle(isVisible);
         },
 
