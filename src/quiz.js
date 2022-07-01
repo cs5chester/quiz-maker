@@ -65,7 +65,7 @@ function quizWidget($) {
         _processLeads: function () {
             var leads = $('#quiz-ntabs');
 
-            if(leads.length) {
+            if (leads.length) {
                 this._replacePlaceholders();
                 this._replaceButtons();
             }
@@ -79,7 +79,7 @@ function quizWidget($) {
 
             for (var i in placeholders) {
                 var placeholder = placeholders[i];
-                var el = $('input[placeholder="'+ placeholder.old +'"]');
+                var el = $('input[placeholder="' + placeholder.old + '"]');
 
                 el.length && el.attr('placeholder', placeholder.new)
             }
@@ -278,6 +278,19 @@ function quizWidget($) {
                 window.location.hash = '';
                 this._reloadQuiz();
             }.bind(this))
+
+            $(document).on('click', '.quiz-widget__warranty-button', function (e) {
+                var target = $(e.target);
+                var isNext = target.hasClass('next');
+                var holder = target.siblings('.quiz-widget__warranty-holder');
+                var activeItem = holder.find('.active');
+                var nextActive = activeItem[isNext ? 'next' : 'prev']();
+
+                if (nextActive.length > 0) {
+                    activeItem.removeClass('active');
+                    nextActive.addClass('active');
+                }
+            });
         },
 
         _reloadQuiz: function () {
