@@ -50,6 +50,13 @@ function quizWidget($) {
                     $(this.options.quizContainer).toggleClass('results', this._isResultsStep())
                     this._triggerProgressBarVisibility(false);
                     this._removeBaseStyles();
+
+                    this._isResultsStep() &&  (function e() {
+                        var e = document.createElement("script");
+                        (e.type = "text/javascript"), (e.async = !0), (e.src = "//staticw2.yotpo.com/nTvdl5HFT1TU7SIJWaQU9c4b0n2gzJx11sDi0L8B/widget.js");
+                        var t = document.getElementsByTagName("script")[0];
+                        t.parentNode.insertBefore(e, t);
+                    })();
                 }.bind(this));
 
                 quiz.addCB('Next', function (question) {
